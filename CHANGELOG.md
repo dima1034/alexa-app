@@ -1,10 +1,28 @@
 ## Changelog
 
-### 4.2.1 (next)
+### 4.2.3 (Next)
+
+* [#344](https://github.com/alexa-js/alexa-app/pull/344): Add coveralls as a check for pull requests - [@kobim](https://github.com/kobim).
+* [#352](https://github.com/alexa-js/alexa-app/pull/352): Allow utterance expansion in custom slot type synonyms - [@daanzu](https://github.com/daanzu).
+* Your contribution here.
+
+### 4.2.2 (April 7, 2018)
+
+* [#315](https://github.com/alexa-js/alexa-app/pull/315): Fix card tests and required card type - [@kobim](https://github.com/kobim).
+* [#314](https://github.com/alexa-js/alexa-app/pull/314): Fix handling of `undefined` slot values - [@User1m](https://github.com/user1m).
+* [#322](https://github.com/alexa-js/alexa-app/pull/322): Included Skill Builder example in example.ejs - [@funkydan2](https://github.com/funkydan2).
+* [#324](https://github.com/alexa-js/alexa-app/pull/324): Added TypeScript declarations for the Alexa address objects - [@CodeCutterUK)](https://github.com/CodeCutterUK).
+* [#329](https://github.com/alexa-js/alexa-app/pull/329): Run dtslint only on the latest node version - [@kobim](https://github.com/kobim).
+* [#313](https://github.com/alexa-js/alexa-app/pull/313): Add general support for upcoming request types - [@matt-kruse](https://github.com/matt-kruse).
+* [#330](https://github.com/alexa-js/alexa-app/pull/330): Making coveralls work again - [@kobim](https://github.com/kobim).
+
+### 4.2.1 (February 1, 2018)
 
 * [#284](https://github.com/alexa-js/alexa-app/pull/284): Add support for generating `ask-cli`-compatible schema JSON - [@lazerwalker](https://github.com/lazerwalker).
-* Your contribution here
-
+* [#301](https://github.com/alexa-js/alexa-app/pull/301): Updated alexa-verifier-middleware to v1.0.0 - [@tejashah88](https://github.com/tejashah88).
+* [#302](https://github.com/alexa-js/alexa-app/pull/302): Move typescript and dtslint from optionalDependencies to devDependencies - [@lazerwalker](https://github.com/lazerwalker).
+* [#310](https://github.com/alexa-js/alexa-app/pull/310): Added support for slot resolutions - [@kobim](https://github.com/kobim).
+* [#316](https://github.com/alexa-js/alexa-app/pull/3107): Fix dtslint failures - [@lazerwalker](https://github.com/lazerwalker)
 
 ### 4.2.0 (September 13, 2017)
 

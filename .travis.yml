@@ -9,10 +9,8 @@ matrix:
         - npm run-script danger
         - npm run-script lint
         - npm run-script test-with-coverage
-        - npm install dtslint
+        - npm install dtslint@^0.2
         - npm run dtslint
-      after_script:
-        - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 
 node_js:
   - 1
@@ -22,6 +20,8 @@ node_js:
   - 5
   - 6
   - 7
+  - 8
+  - 9
 
 cache:
   directories:
@@ -29,6 +29,9 @@ cache:
 
 before_install:
   - npm config set spin false
+
+after_success:
+  - cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 
 notifications:
   email: false

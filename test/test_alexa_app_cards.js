@@ -53,21 +53,23 @@ describe("Alexa", function() {
                 var cardResponse = subject.then(function(response) {
                   return response.response;
                 });
-                expect(cardResponse).to.eventually.not.have.property("card");
+                return expect(cardResponse).to.eventually.not.have.property("card");
               });
             });
 
             describe("of an unknown type", function() {
               it("adds no card response", function() {
                 testApp.intent("airportInfoIntent", {}, function(req, res) {
-                  res.say("sweet!").card({type: undefined});
+                  res.say("sweet!").card({
+                    type: undefined
+                  });
                 });
 
                 var subject = testApp.request(mockRequest);
                 var cardResponse = subject.then(function(response) {
                   return response.response.card;
                 });
-                expect(cardResponse).to.eventually.become({});
+                return expect(cardResponse).to.eventually.be.undefined;
               });
             });
           });

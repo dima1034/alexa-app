@@ -12,6 +12,9 @@
     * [response](#response)
       * [Building SSML Responses](#building-ssml-responses)
     * [session](#session)
+    * [slot](#slot)
+    * [slotResolution](#slotResolution)
+    * [resolutionValue](#resolutionValue)
 * [Request Handlers](#request-handlers)
     * [LaunchRequest](#launchrequest)
     * [IntentRequest](#intentrequest)
@@ -19,6 +22,7 @@
     * [Display.ElementSelected](#display-element-selected)
     * [AudioPlayer Event Request](#audioplayer-event-request)
     * [PlaybackController Event Request](#playbackcontroller-event-request)
+    * [Other Event Request](#other-event-request)
 * [Execute Code On Every Request](#execute-code-on-every-request)
     * [pre()](#pre)
     * [post()](#post)
@@ -34,6 +38,7 @@
 * [Custom Directives](#custom-directives)
 * [Dialog](#dialog)
 * [Error Handling](#error-handling)
+* [Echo Show Support](#echo-show-support)
 * [Asynchronous Handlers Example](#asynchronous-handlers-example)
     * [Customizing Default Error Messages](#customizing-default-error-messages)
     * [Read/write session data](#readwrite-session-data)
@@ -50,7 +55,7 @@ A Node module to simplify the development of Alexa skills (applications.)
 
 ## Stable Release
 
-You're reading the documentation for the next release of alexa-app, which should be 4.2.1. Please see [CHANGELOG](CHANGELOG.md) and make sure to read [UPGRADING](UPGRADING.md) when upgrading from a previous version. The current stable release is [4.2.0](https://github.com/alexa-js/alexa-app/tree/v4.2.0).
+You're reading the documentation for the next release of alexa-app, which should be 4.2.3. Please see [CHANGELOG](CHANGELOG.md) and make sure to read [UPGRADING](UPGRADING.md) when upgrading from a previous version. The current stable release is [4.2.2](https://github.com/alexa-js/alexa-app/tree/v4.2.2).
 
 ## Introduction
 
@@ -224,6 +229,7 @@ response.audioPlayerStop()
 response.audioPlayerClearQueue([ String clearBehavior ])
 
 // tell Alexa whether the user's session is over; sessions end by default
+// pass null or undefined to leave shouldEndSession undefined in the response, to satisfy newer API's
 // you can optionally pass a reprompt message
 response.shouldEndSession(boolean end [, String reprompt] )
 
@@ -329,8 +335,38 @@ String slot.value
 // return the slot's confirmationStatus
 String slot.confirmationStatus
 
+// return the slot's resolutions
+SlotResolution[] slot.resolutions
+
 // check if the slot is confirmed
 Boolean slot.isConfirmed()
+
+// return the n-th resolution
+SlotResolution slot.resolution(Integer n)
+```
+
+### slotResolution
+```javascript
+// get the resolution status code
+String resolution.status
+
+// get the list of resolution values
+ResolutionValue resolution.values
+
+// check if the resolution is matched
+Boolean resolution.isMatched()
+
+// Get the first resolution value
+ResolutionValue resolution.first()
+```
+
+### resolutionValue
+```javascript
+// get the value name
+String resolutionValue.name
+
+// get the value id
+String resolutionValue.id
 ```
 
 ## Request Handlers
@@ -512,6 +548,20 @@ app.playbackController('NextCommandIssued', (request, response) => {
 
 Note that some device interactions don't always produce PlaybackController events. See the [PlaybackController Interface Introduction](https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/custom-playbackcontroller-interface-reference#introduction) for more details.
 
+### Other Event Request
+
+Handle any new requests that don't have an explicit handler type available (such as new or pre-release features) using the general `on()` and passing the event type.
+
+The following example will handle an imaginary request of type `DeviceEngine.InputHandler` as if it were added to the Alexa API.
+
+```javascript
+app.on('DeviceEngine.InputHandler', (request, response, request_json) => {
+  response.say("You triggered an event from device " + request_json.request.event.deviceName);
+});
+```
+
+Note that the raw request json is sent as the 3rd parameter to make sure the handler function has access to all data in the case that the request format differs from other handler types.
+
 ## Execute Code On Every Request
 
 In addition to specific event handlers, you can define functions that will run on every request.
@@ -612,7 +662,7 @@ Note that the "CustomSlotType" type values must be specified in the Skill Interf
 
 #### custom slot type values
 
-If you have custom slot types, you can define your custom slot type values as well. Custom values can either be simple strings, or more full-fledged objects if you want to take advantage of Skill Builder features like synonyms.
+If you have custom slot types, you can define your custom slot type values as well. Custom values can either be simple strings, or more full-fledged objects if you want to take advantage of Skill Builder features like synonyms. If using synonyms, you can also take advantage of utterance expansion from alexa-utterances (including dictionary), as described below.
 
 ```javascript
 testApp.customSlot("animal", ["cat", "dog"]);
@@ -624,7 +674,7 @@ OR
 testApp.customSlot("animal", [{
   value: "dog",
   id: "canine",
-  synonyms: ["doggo", "pupper", "woofmeister"]
+  synonyms: ["doggo", "pup{per|}", "woofmeister"]
 }]);
 ```
 
@@ -890,6 +940,21 @@ app.error = function(exception, request, response) {
   throw exception;
 };
 ```
+
+## Echo Show Support
+
+With the addition of [custom directives](#custom-directives) and support for [display elements]((#display-element-selected)) being selected, this library fully supports the Echo Show. Note that it is up to the developer to detect if the device can handle a display directive. If a display directive is returned to a non-visual device it will throw an error. One technique is to leverage the `app.post` call and remove any directives if the device does not support a UI. For example:
+
+```
+app.post(req, res, type, exception) {
+  // If the device does not support display directives then remove them from the response
+  if (!system.supportsDisplay(req))) {
+    res.response.response.directives = []
+  }
+}
+```
+
+Please refer to [Amazon's documentation](https://developer.amazon.com/docs/custom-skills/display-interface-reference.html#display-template-reference) for the list of supported template markup.
 
 ## Asynchronous Handlers Example
 

@@ -47,19 +47,25 @@ describe("Alexa", function() {
     });
 
     context("#express warns when redundant param is passed", function() {
-        it("warns on given both params 'expressApp' and 'router'", function() {
-          var bkp = console.warn.bind();
-          console.warn = sinon.spy();
-          testApp.express({expressApp: app, router: express.Router()});
-          var warning = "Usage deprecated: Both 'expressApp' and 'router' are specified.\nMore details on https://github.com/alexa-js/alexa-app/blob/master/UPGRADING.md";
-          expect(console.warn).to.have.been.calledWithExactly(warning);
-          console.warn = bkp;
+      it("warns on given both params 'expressApp' and 'router'", function() {
+        var bkp = console.warn.bind();
+        console.warn = sinon.spy();
+        testApp.express({
+          expressApp: app,
+          router: express.Router()
         });
+        var warning = "Usage deprecated: Both 'expressApp' and 'router' are specified.\nMore details on https://github.com/alexa-js/alexa-app/blob/master/UPGRADING.md";
+        expect(console.warn).to.have.been.calledWithExactly(warning);
+        console.warn = bkp;
+      });
     });
 
     context("#express with default options", function() {
       beforeEach(function() {
-        testApp.express({ expressApp: app, checkCert: false });
+        testApp.express({
+          expressApp: app,
+          checkCert: false
+        });
       });
 
       it("returns a response for a valid request", function() {
@@ -76,7 +82,9 @@ describe("Alexa", function() {
       it("speaks an invalid request", function() {
         return request(testServer)
           .post('/testApp')
-          .send({ x: 1 })
+          .send({
+            x: 1
+          })
           .expect(200).then(function(response) {
             return expect(response.body.response.outputSpeech.ssml).to.eq("<speak>Error: not a valid request</speak>")
           });
@@ -86,6 +94,18 @@ describe("Alexa", function() {
         return request(testServer)
           .get('/testApp')
           .expect(404);
+      });
+
+      it("fails with server error on bad request", function() {
+        testApp.pre = function() {
+          throw "SOME ERROR";
+        };
+        return request(testServer)
+          .post('/testApp')
+          .send()
+          .expect(500).then(function(response) {
+            return expect(response.error.text).to.eq("Server Error");
+          });
       });
     });
 
@@ -101,7 +121,6 @@ describe("Alexa", function() {
 
         testApp.express({
           expressApp: app,
-          router: express.Router(),
           checkCert: false,
           debug: true
         });
@@ -143,6 +162,15 @@ describe("Alexa", function() {
               expect(response.text).to.eq(testApp.schemas.skillBuilder());
             });
         });
+
+        it("returns empty schema for invalid schema type", function() {
+          return request(testServer)
+            .get('/testApp?schema&schemaType=invalid')
+            .expect(200).then(function(response) {
+              expect(response.headers['content-type']).to.equal('text/plain; charset=utf-8');
+              expect(response.text).to.eq('');
+            });
+        });
       })
 
       it("returns debug utterances", function() {
@@ -155,10 +183,35 @@ describe("Alexa", function() {
       });
     });
 
+    context("#express with debug set to true and has empty intents", function() {
+      beforeEach(function() {
+        testApp.intent("emptyIntent");
+
+        testApp.express({
+          expressApp: app,
+          checkCert: false,
+          debug: true
+        });
+      });
+
+      it("returns no utterances", function() {
+        return request(testServer)
+          .get('/testApp?utterances')
+          .expect(200).then(function(response) {
+            expect(response.headers['content-type']).to.equal('text/plain; charset=utf-8');
+            expect(response.text).to.eq('');
+          });
+      });
+    });
+
     context("#express with debug set to false", function() {
       beforeEach(function() {
         var router = express.Router();
-        testApp.express({ router: router, checkCert: false, debug: false });
+        testApp.express({
+          router: router,
+          checkCert: false,
+          debug: false
+        });
         app.use(router);
       });
 
@@ -176,7 +229,6 @@ describe("Alexa", function() {
       beforeEach(function() {
         testApp.express({
           expressApp: app,
-          router: express.Router(),
           checkCert: false,
           preRequest: function(json, request, response) {
             fired.preRequest = json;
@@ -202,7 +254,6 @@ describe("Alexa", function() {
       beforeEach(function() {
         testApp.express({
           expressApp: app,
-          router: express.Router(),
           checkCert: true,
           debug: true
         });
@@ -211,7 +262,7 @@ describe("Alexa", function() {
       it("requires a cert header", function() {
         return request(testServer)
           .post('/testApp')
-          .expect(401).then(function(res) {
+          .expect(400).then(function(res) {
             expect(res.body.status).to.equal("failure");
             expect(res.body.reason).to.equal("missing certificate url");
           });
@@ -222,7 +273,7 @@ describe("Alexa", function() {
           .post('/testApp')
           .set('signaturecertchainurl', 'dummy')
           .set('signature', 'dummy')
-          .expect(401).then(function(res) {
+          .expect(400).then(function(res) {
             expect(res.body.status).to.equal("failure");
             expect(res.body.reason).to.equal("missing request (certificate) body");
           });
@@ -236,7 +287,7 @@ describe("Alexa", function() {
           .set('signaturecertchainurl', 'dummy')
           .set('signature', 'dummy')
           .send(mockRequest)
-          .expect(401).then(function(res) {
+          .expect(400).then(function(res) {
             expect(res.body.status).to.equal("failure");
             expect(res.body.reason).to.equal("invalid signature (not base64 encoded)");
           });

@@ -88,13 +88,17 @@ describe("Alexa", function() {
           testApp.pre = function(req, res, type) {
             var session = req.getSession();
             session.set("foo", true);
-            session.set("bar", {qaz: "woah"});
+            session.set("bar", {
+              qaz: "woah"
+            });
           };
 
           testApp.intent("airportInfoIntent", {}, function(req, res) {
             var session = req.getSession();
             session.set("foo", true);
-            session.set("bar", {qaz: "woah"});
+            session.set("bar", {
+              qaz: "woah"
+            });
 
             res.say("message").shouldEndSession(false);
             var session = req.getSession();
@@ -126,7 +130,9 @@ describe("Alexa", function() {
           testApp.pre = function(req, res, type) {
             var session = req.getSession();
             session.set("foo", true);
-            session.set("bar", {qaz: "woah"});
+            session.set("bar", {
+              qaz: "woah"
+            });
           };
 
           testApp.intent("airportInfoIntent", {}, function(req, res) {
@@ -159,7 +165,9 @@ describe("Alexa", function() {
           testApp.pre = function(req, res, type) {
             var session = req.getSession();
             session.set("foo", true);
-            session.set("bar", {qaz: "woah"});
+            session.set("bar", {
+              qaz: "woah"
+            });
           };
 
           testApp.intent("airportInfoIntent", {}, function(req, res) {
@@ -211,6 +219,27 @@ describe("Alexa", function() {
           ]);
         });
       });
+
+      context("intent handler without shouldEndSession", function() {
+        it("responds without shouldEndSession", function() {
+          testApp.intent("airportInfoIntent", {}, function(req, res) {
+            res.say("hi").shouldEndSession();
+            res.session("foo", true);
+            res.session("bar", {
+              qaz: "woah"
+            });
+            res.clearSession();
+            return true;
+          });
+
+          var subject = testApp.request(mockRequest).then(function(response) {
+            return response.sessionAttributes;
+          });
+          return Promise.all([
+            expect(subject).to.eventually.become({})
+          ]);
+        });
+      });
     });
 
     describe("#response", function() {
@@ -233,7 +262,9 @@ describe("Alexa", function() {
           });
 
           return Promise.all([
-            expect(subject).to.eventually.become({ "foo": true })
+            expect(subject).to.eventually.become({
+              "foo": true
+            })
           ]);
         });
 
@@ -368,7 +399,7 @@ describe("Alexa", function() {
         it("session.get(key) should not throw if attribute is not present", function() {
           var returnedAttributeValue = "overridden";
 
-           /**
+          /**
            * @param {Alexa.request} req
            * @param {Alexa.response} res
            * @param {string} type
@@ -377,7 +408,9 @@ describe("Alexa", function() {
             returnedAttributeValue = req.getSession().get("AttributeWhichDoesNotExist");
           };
 
-          return testApp.request(mockRequest).then(function() { expect(returnedAttributeValue).to.be.undefined; });
+          return testApp.request(mockRequest).then(function() {
+            expect(returnedAttributeValue).to.be.undefined;
+          });
         });
       });
     });
@@ -515,6 +548,28 @@ describe("Alexa", function() {
           });
 
         });
+      });
+    });
+
+    describe("intent request with malformed session", function() {
+      var mockRequest = mockHelper.load("intent_request_malformed_session.json");
+
+      it("responds a valid session object", function() {
+        testApp.pre = function(req, res, type) {
+          if (req.hasSession()) {
+            req.getSession().set("foo", "bar");
+          }
+        };
+
+        var subject = testApp.request(mockRequest).then(function(response) {
+          return response.sessionAttributes;
+        });
+
+        return Promise.all([
+          expect(subject).to.eventually.become({
+            "foo": "bar"
+          })
+        ]);
       });
     });
   });

@@ -10,6 +10,30 @@ chai.config.includeStack = true;
 import * as Alexa from '..';
 
 describe("Alexa", function() {
+
+  context("#alexa.request.slot", function() {
+    var testReq = mockHelper.load("intent_request_airport_info.json");
+
+    beforeEach(function() {
+      testReq = mockHelper.load("intent_request_airport_info.json");
+    });
+
+    afterEach(() => {
+      testReq = null;
+    });
+
+    it("get slot value if correct", function() {
+      var req = new Alexa.request(testReq);
+      expect(req.slot("AirportCode", "SEA")).to.eql("JFK");
+    });
+
+    it("gets defaultValue if slot value is undefined", function() {
+      testReq.request.intent.slots.AirportCode.value = undefined;
+      var req = new Alexa.request(testReq);
+      expect(req.slot("AirportCode", "SEA")).to.eql("SEA");
+    });
+  });
+
   describe("app", function() {
     var testApp = new Alexa.app("testApp");
 
@@ -20,7 +44,12 @@ describe("Alexa", function() {
     context("#customslot", function() {
       var slotValue = {
         value: "dog",
-        synonyms: ["pupper, doggo"],
+        synonyms: ["doggo", "pup{per|}"],
+        id: "dog"
+      };
+      var slotValueExpanded = {
+        value: "dog",
+        synonyms: ["doggo", "pupper", "pup"],
         id: "dog"
       };
 
@@ -30,13 +59,15 @@ describe("Alexa", function() {
         });
 
         it("adds the slot value", function() {
-          expect(testApp.customSlots["animals"]).to.eql([slotValue]);
+          expect(testApp.customSlots["animals"]).to.eql([slotValueExpanded]);
         });
       });
 
       context("with an incomplete slot value object", function() {
         beforeEach(function() {
-          testApp.customSlot("animals", [{value: "dog"}]);
+          testApp.customSlot("animals", [{
+            value: "dog"
+          }]);
         });
 
         it("adds the slot value with default params", function() {
@@ -72,7 +103,7 @@ describe("Alexa", function() {
             value: "dog",
             synonyms: [],
             id: null
-          }, slotValue]);
+          }, slotValueExpanded]);
         });
       });
     });

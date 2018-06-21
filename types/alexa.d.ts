@@ -5,6 +5,20 @@ export type CardType = any; /* "Simple"|"Standard"|"LinkAccount" */
 // TODO: A request can also be a few other things we don't handle (e.g. AudioPlayer request, Dispay.RenderTemplate request, etc)
 export type Request = any; /* LaunchRequest|IntentRequest|SessionEndedRequest| */
 
+/**
+ * Returned when the skill requests the full address with the address consent
+ * @see https://developer.amazon.com/docs/custom-skills/device-address-api.html
+ */
+export interface Address {
+  addressLine1: string;
+  addressLine2: string;
+  addressLine3: string;
+  districtOrCounty: string;
+  stateOrRegion: string;
+  city: string;
+  postalCode: string;
+}
+
 export interface AudioItem {
   stream: Stream;
 }
@@ -30,6 +44,15 @@ export interface Context {
   System: System;
   AudioPlayer?: AudioPlayer;
   Display?: Display;
+}
+
+/**
+ * Returned when the skill requests the address with only the CountryAndPostalCode consent
+ * @see https://developer.amazon.com/docs/custom-skills/device-address-api.html
+ */
+export interface CountryAndPostalCode {
+  county: string;
+  postalCode: string;
 }
 
 export interface Intent {
@@ -111,11 +134,32 @@ export interface SessionEndedRequest {
     message: string;
   };
 }
+
+export interface ResolutionValue {
+  value: {
+    name: string;
+    id: string;
+  };
+}
+
+export interface AuthorityResolution {
+  authority: string;
+  status: {
+    code: "ER_SUCCESS_MATCH|ER_SUCCESS_NO_MATCH|ER_ERROR_TIMEOUT|ER_ERROR_EXCEPTION";
+  };
+  values: ResolutionValue[];
+}
+
+export interface Resolutions {
+  type: "Resolutions";
+  resolutionsPerAuthority: AuthorityResolution[];
+}
+
 export interface Slot {
   name: string;
   value: string;
   confirmationStatus: "NONE"|"CONFIRMED"|"DENIED";
-  resolutions: any; // TODO
+  resolutions?: Resolutions;
 }
 
 export interface Stream {
